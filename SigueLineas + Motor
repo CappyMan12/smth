@@ -1,0 +1,55 @@
+#include <QTRSensors.h>
+#include <BluetoothSerial.h>
+
+#define LED 2
+#define BOTON 12  
+                       
+const int freq = 5000;
+const int resolution = 8;
+
+//modelo bluetooth 1
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Fallo de bluetooth
+#endif
+BluetoothSerial SerialBT;
+
+QTRSensors sigueLineas;
+const uint8_t SensorCount = 8;
+uint16_t sensorValues[SensorCount];  
+int umbral = 2900;
+int val = 1;
+void setup() {
+  
+  Serial.begin(115200);
+  pinMode(LED, OUTPUT);
+  sigueLineas.setTypeAnalog();
+  sigueLineas.setSensorPins((const uint8_t[]){36, 39, 34, 35, 32, 33, 25, 26}, SensorCount); //aqui es el numero de pin -1 (ej: el pin 4 es 3, el 5 es 4 y asi
+  sigueLineas.setEmitterPin(27);
+
+ Serial.println("Calibrando Sensores...");
+ 
+digitalWrite(LED, OUTPUT);
+for(int i = 0; i < 200; i++){ 
+  sigueLineas.calibrate();  //Esto pasa 199 veces
+  delay(10);
+}
+digitalWrite (LED, LOW);
+
+Serial.println("Calibracion completada");
+Serial.println("Presione el boton para empezar");
+
+while(digitalRead(BOTON) == 0 ){
+  delay(10);
+ }
+}
+
+void loop() {
+   SerialBT.begin("El robot"); 
+  sigueLineas.read(sensorValues);
+  
+  for (uint8_t i = 0; i < SensorCount; i++) {
+    Serial.print(sensorValues[i]);
+    Serial.print("\t");
+  }
+  Serial.println();       //menor que 4000 = blanco(<), mayor que 4000 = black(>)
+}
