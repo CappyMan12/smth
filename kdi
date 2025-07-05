@@ -1,0 +1,33 @@
+#include <Adafruit_VL53L0X.h>
+#include <Wire.h>
+
+Adafruit_VL53L0X lox = Adafruit_VL53L0X
+
+void setup()
+Serial.begin(115200);
+Serial.println("Iniciando...");
+
+if (!lox.begin()){
+  Serial.println(F("¡Error de inicio de VL53L0X! Verifica las conexiones"));
+  while(1);
+}
+
+Serial.println(F("VL53L0X iniciado correctamente!"));
+
+}
+
+void loop(){
+  VL53L0X_RagingMeasuurementData_t measure;
+
+lox.ragingTest(&measure, false);
+
+if (measure.RangeStatus != 4) {
+  Serial.print("Distancia: ");
+  Serial.print(measure.RangeMilliMeter);
+  Serial.println(" mm");
+} else {
+  Serial.println("Fuera de rango");
+}
+
+delay(100);
+}
